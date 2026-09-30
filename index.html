@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f5f0">
+    <meta name="description" content="Organize class notes photos into clean, printable PDFs. Your projects stay on your device.">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <title>Papertrail · Notes to PDF</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Papertrail home"><span class="brand-mark">p.</span><span>papertrail</span></a>
+        <div class="topbar-right"><span class="local-badge"><span class="local-dot"></span>Saved in this browser</span><button class="icon-button" id="backup-button" title="Import or export a project backup" aria-label="Import or export a project backup">↗</button></div>
+      </header>
+
+      <main>
+        <section id="home-view" class="view">
+          <div class="hero">
+            <div><p class="eyebrow">YOUR NOTES, IN ORDER</p><h1>Make room for<br><em>what matters.</em></h1><p class="hero-copy">Turn the pages you collect into one clear, printable notebook.</p></div>
+            <div class="hero-art" aria-hidden="true"><div class="paper paper-back"></div><div class="paper paper-front"><i></i><i></i><i></i><i></i><b>NOTES</b></div><span class="art-star">✳</span></div>
+          </div>
+          <div class="section-head"><div><p class="eyebrow">YOUR LIBRARY</p><h2>Subjects <span id="subject-count" class="count">0</span></h2></div><button id="new-subject" class="button button-primary"><span>＋</span> New subject</button></div>
+          <div id="subjects-grid" class="subjects-grid"></div>
+          <div id="empty-state" class="empty-state"><div class="empty-icon">▤</div><h3>A fresh page</h3><p>Create a subject, then add your first notes.</p><button class="button button-secondary" id="empty-create">Create a subject <span>→</span></button></div>
+          <p class="privacy-note"><span>◉</span> Your notebooks stay in this browser. Export a backup to move them to another browser or device.</p>
+        </section>
+
+        <section id="subject-view" class="view hidden">
+          <button class="back-link" id="back-home">← All subjects</button>
+          <div class="subject-title-row"><div><p class="eyebrow">SUBJECT NOTEBOOK</p><h1 id="subject-title"></h1><p class="subject-meta" id="subject-meta"></p></div><div class="subject-actions"><button class="button button-secondary" id="download-pdf" disabled>↓ Download PDF</button><button class="button button-quiet" id="rename-subject">Rename</button></div></div>
+          <div id="pdf-status" class="pdf-status hidden"></div>
+          <div class="pages-header"><div><h2>Pages <span id="page-count" class="count">0</span></h2><p>Drag to arrange pages · changes save into your notebook</p></div><div class="pages-actions"><button class="button button-quiet" id="import-backup-subject">↗ Backup</button><button class="button button-primary" id="add-pages">＋ Add pages</button></div></div>
+          <div id="draft-bar" class="draft-bar hidden"><div><strong><span id="draft-count">0</span> new page<span id="draft-plural">s</span></strong><span>Review and arrange, then add them to this notebook.</span></div><button id="save-drafts" class="button button-primary">Add pages to notebook <span>→</span></button></div>
+          <div id="drafts-grid" class="pages-grid drafts-grid"></div>
+          <div id="pages-grid" class="pages-grid"></div>
+          <div id="pages-empty" class="pages-empty"><div class="upload-icon">＋</div><h3>Start with a photo</h3><p>Add the notes you want in this subject. You can crop, rotate and arrange them before saving.</p><button class="button button-primary" id="first-add">Choose images <span>→</span></button><div class="format-hint">JPG · PNG · WEBP · HEIC (browser support varies)</div></div>
+          <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" multiple hidden>
+        </section>
+      </main>
+      <footer class="app-footer"><span>papertrail</span><span>Private by design · Works on this device</span></footer>
+    </div>
+
+    <dialog id="subject-dialog" class="dialog">
+      <form method="dialog" id="subject-form"><button class="dialog-close" value="cancel" aria-label="Close">×</button><p class="eyebrow">A NEW NOTEBOOK</p><h2 id="subject-dialog-title">Name your subject</h2><label for="subject-name">Subject name</label><input id="subject-name" maxlength="60" placeholder="e.g. Biology" required autocomplete="off"><div class="dialog-actions"><button class="button button-quiet" value="cancel">Cancel</button><button class="button button-primary" id="subject-submit" value="save">Create subject</button></div></form>
+    </dialog>
+
+    <dialog id="editor-dialog" class="dialog editor-dialog">
+      <div class="editor-head"><div><p class="eyebrow">PAGE EDITOR</p><h2 id="editor-title">Refine your page</h2></div><button class="dialog-close" id="editor-close" aria-label="Close">×</button></div>
+      <div class="editor-content"><div class="canvas-wrap"><canvas id="editor-canvas"></canvas><div class="canvas-overlay" id="canvas-overlay" aria-label="Crop corners"></div></div><div class="editor-tools"><div class="tool-group"><h3>Crop & straighten</h3><p>Drag the four corners to crop or straighten manually.</p><button class="tool-button tool-wide" id="reset-crop">Reset crop</button><button class="tool-button tool-wide" id="rotate-page">↻ Rotate 90° clockwise</button></div><div class="tool-group"><h3>Page look</h3><p>Choose the finish that makes your notes easiest to read.</p><div class="filter-options"><button class="filter-option active" data-filter="color"><span class="filter-thumb color-thumb"></span>Color</button><button class="filter-option" data-filter="gray"><span class="filter-thumb gray-thumb"></span>Grayscale</button><button class="filter-option" data-filter="bw"><span class="filter-thumb bw-thumb"></span>Clean B&W</button></div></div><div id="editor-error" class="inline-error hidden"></div></div></div>
+      <div class="editor-footer"><button class="button button-quiet" id="editor-cancel">Cancel</button><button class="button button-primary" id="editor-save">Save changes <span>✓</span></button></div>
+    </dialog>
+
+    <dialog id="backup-dialog" class="dialog backup-dialog">
+      <button class="dialog-close" id="backup-close" aria-label="Close">×</button><p class="eyebrow">YOUR DATA, YOUR CHOICE</p><h2>Project backup</h2><p class="dialog-copy">Backups include original photos and edits so you can continue on another device. Your data stays in this browser until you export it.</p><div class="backup-actions"><button id="export-backup" class="button button-primary">↓ Export all subjects</button><button id="import-backup" class="button button-secondary">↑ Import a backup</button></div><p class="format-hint">Backup files use the .papertrail.json format.</p><input id="backup-input" type="file" accept="application/json,.json" hidden>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js?v=2"></script>
+  </body>
+</html>

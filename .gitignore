@@ -1,0 +1,13 @@
+# Local machine and IDE files
+.android/
+.idea/
+local.properties
+
+# Gradle caches and generated output
+.gradle/
+build-cache/
+**/build/
+
+# OS files
+Thumbs.db
+.DS_Store

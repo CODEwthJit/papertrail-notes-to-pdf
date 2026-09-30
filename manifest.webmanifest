@@ -1,0 +1,12 @@
+{
+  "name": "Papertrail · Notes to PDF",
+  "short_name": "Papertrail",
+  "description": "Organize class notes into clear printable PDFs. Stored locally on your device.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#f7f5f0",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
