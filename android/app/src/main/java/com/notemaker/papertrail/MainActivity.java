@@ -1,6 +1,7 @@
 package com.notemaker.papertrail;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Insets;
@@ -28,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -123,7 +125,7 @@ public final class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_FILE_REQUEST) {
             if (fileChooserCallback != null) {
-                fileChooserCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+                fileChooserCallback.onReceiveValue(readSelectedFiles(resultCode, data));
                 fileChooserCallback = null;
             }
             return;
@@ -153,7 +155,16 @@ public final class MainActivity extends Activity {
             if (fileChooserCallback != null) fileChooserCallback.onReceiveValue(null);
             fileChooserCallback = callback;
             try {
-                startActivityForResult(params.createIntent(), PICK_FILE_REQUEST);
+                Intent intent = params.createIntent();
+                if (acceptsImages(params.getAcceptTypes())) {
+                    // Android WebView may collapse a multi-MIME HTML accept list to its first
+                    // entry (often image/jpeg), hiding PNG, WebP, and HEIC photos in the picker.
+                    intent.setType("image/*");
+                }
+                if (params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                }
+                startActivityForResult(intent, PICK_FILE_REQUEST);
                 return true;
             } catch (Exception exception) {
                 fileChooserCallback = null;
@@ -161,6 +172,33 @@ public final class MainActivity extends Activity {
                 return false;
             }
         }
+    }
+
+    private static boolean acceptsImages(String[] acceptTypes) {
+        if (acceptTypes == null) return false;
+        for (String accepted : acceptTypes) {
+            if (accepted == null) continue;
+            for (String type : accepted.toLowerCase(Locale.ROOT).split(",")) {
+                String clean = type.trim();
+                if (clean.startsWith("image/") || clean.matches("\\.?(jpg|jpeg|png|webp|heic|heif)")) return true;
+            }
+        }
+        return false;
+    }
+
+    private static Uri[] readSelectedFiles(int resultCode, Intent data) {
+        if (resultCode != RESULT_OK || data == null) return null;
+        ArrayList<Uri> selected = new ArrayList<>();
+        ClipData clipData = data.getClipData();
+        if (clipData != null) {
+            for (int index = 0; index < clipData.getItemCount(); index++) {
+                Uri uri = clipData.getItemAt(index).getUri();
+                if (uri != null && !selected.contains(uri)) selected.add(uri);
+            }
+        }
+        Uri single = data.getData();
+        if (single != null && !selected.contains(single)) selected.add(single);
+        return selected.isEmpty() ? null : selected.toArray(new Uri[0]);
     }
 
     private final class LocalAssetsClient extends WebViewClient {
